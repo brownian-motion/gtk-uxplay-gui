@@ -37,13 +37,42 @@
 
           buildInputs = [
             # Add additional build inputs here
+            pkgs.pkg-config 
+            pkgs.glib
+            pkgs.gtk4
           ] ++ lib.optionals pkgs.stdenv.isDarwin [
             # Additional darwin specific inputs can be set here
             pkgs.libiconv
           ];
 
+          nativeBuildInputs = [ 
+            pkgs.pkg-config 
+            pkgs.glib
+            pkgs.gtk4
+            pkgs.libadwaita
+          ];
+
           # Additional environment variables can be set directly
-          # MY_CUSTOM_VAR = "some value";
+
+          NIX_CFLAGS_COMPILE = [ 
+            "-I${pkgs.glib.dev}/include" 
+            "-I${pkgs.gtk4.dev}/include" 
+          ];
+          NIX_LDFLAGS = [ 
+            "-L${pkgs.glib.dev}/lib" 
+            "-L${pkgs.gtk4.dev}/lib"
+          ];
+
+          # Set the PKG_CONFIG_PATH to include pkg-config files for glib during build
+          PKG_CONFIG_PATH = lib.strings.concatStringsSep ":" [
+            "${pkgs.gtk4.dev}/lib/pkgconfig"
+            "${pkgs.glib.dev}/lib/pkgconfig"
+            "${pkgs.cairo.dev}/lib/pkgconfig"
+            "${pkgs.pango.dev}/lib/pkgconfig"
+            "${pkgs.harfbuzz.dev}/lib/pkgconfig"
+            "${pkgs.gdk-pixbuf.dev}/lib/pkgconfig"
+            "${pkgs.atk.dev}/lib/pkgconfig"
+          ];
         };
 
         craneLibLLvmTools = craneLib.overrideToolchain
@@ -136,7 +165,9 @@
           # Extra inputs can be added here; cargo and rustc are provided by default.
           packages = [
             # pkgs.ripgrep
+            pkgs.pkg-config
           ];
+          # nativeBuildInputs = [ pkg-config ];
         };
       });
 }
