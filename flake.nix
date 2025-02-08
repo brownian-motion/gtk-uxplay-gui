@@ -28,7 +28,10 @@
         inherit (pkgs) lib;
 
         craneLib = crane.mkLib pkgs;
-        src = craneLib.cleanCargoSource ./.;
+        src = lib.cleanSourceWith {
+          src = ./.;
+          filter = path: type: (builtins.match ".*\\.(ui|gresource\\.xml)$" path != null) || (craneLib.filterCargoSources path type);
+        };
 
         # Common arguments can be set here to avoid repeating them later
         commonArgs = {
